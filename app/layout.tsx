@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://reponecromancer.fun"),
+  metadataBase: new URL("https://www.reponecromancer.fun"),
   title: "RepoNecromancer — raise dead repos",
   description:
     "Exhume abandoned JavaScript projects, diagnose what killed them, transplant dead dependencies, patch breaking changes with AST codemods and prove they live with generated regression tests.",
   openGraph: {
     title: "RepoNecromancer — raise dead repos",
     description: "Dead dependencies in, green tests out. Built with Kiro for Kiroween 2026.",
-    url: "https://reponecromancer.fun",
+    url: "https://www.reponecromancer.fun",
     siteName: "RepoNecromancer",
     type: "website",
   },
