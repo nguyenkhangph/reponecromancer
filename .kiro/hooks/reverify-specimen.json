@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Re-verify specimens",
+      "description": "When a specimen or a codemod/test-generation file changes, re-run the real before/after verification so the lab never shows stale evidence.",
+      "trigger": "PostFileSave",
+      "matcher": "(presets/.*[^/]*$|engine/codemods\\.ts$|engine/testgen\\.ts$|engine/deps\\.ts$|engine/configs\\.ts$)",
+      "action": {
+        "type": "agent",
+        "prompt": "Run `npm run necro:verify` (optionally only for the changed preset id). Report the before/after line for each specimen. If any resurrected tree is not fully green (install, tests, lint, build), investigate the failing case in data/presets/<id>.json, fix the engine, and re-run. Never edit data/presets/*.json by hand."
+      },
+      "enabled": true
+    }
+  ]
+}
