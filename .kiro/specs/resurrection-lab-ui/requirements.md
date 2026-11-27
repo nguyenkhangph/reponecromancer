@@ -21,3 +21,9 @@
 2. THE SYSTEM SHALL show every patch in a file list (M/+/−) with reasons and a split diff with folded unchanged regions.
 3. THE SYSTEM SHALL let the user download the resurrected tree as a zip including `NECROPSY.md`.
 4. WHEN no evidence exists (GitHub mode) THE SYSTEM SHALL say verification runs locally and how.
+
+### Requirement 5 — Share
+
+1. WHEN the lab is showing a GitHub-exhumed repo THE SYSTEM SHALL display a "Copy link" button in the lab header that copies `window.location.href` to the clipboard and shows "Copied ✓" for 2 seconds.
+2. THE SYSTEM SHALL use `navigator.clipboard` with a silent `try/catch` fallback; it SHALL NOT call `alert()` or throw on failure.
+3. THE SYSTEM SHALL set the page `<title>` and OpenGraph title to `<owner/repo> — RepoNecromancer lab` when `?repo=` is present in the URL.

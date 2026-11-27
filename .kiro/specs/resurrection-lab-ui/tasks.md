@@ -8,4 +8,4 @@
 - [x] 6. Before/After: verdict, file list, split DiffView, test board, logs — _Req 4.1, 4.2_
 - [x] 7. Zip download with NECROPSY.md — _Req 4.3_
 - [x] 8. `/exhume` client page + `/api/resurrect` — _Req 1.2, 4.4_
-- [ ] 9. Shareable permalink for exhumed repos (stretch)
+- [x] 9. Shareable permalink for exhumed repos (stretch)

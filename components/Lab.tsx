@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { zipSync, strToU8 } from "fflate";
 import { applyPatches } from "@/engine/apply";
 import { renderNecropsy } from "@/engine/report";
@@ -85,6 +85,31 @@ function buildScript(b: LabBundle): Line[][] {
   return s;
 }
 
+function CopyLink() {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<number | null>(null);
+
+  const copy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+    } catch {
+      // clipboard not available (e.g. non-secure context) — do nothing, never alert
+      return;
+    }
+    setCopied(true);
+    if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setCopied(false), 2000);
+  }, []);
+
+  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
+
+  return (
+    <button className="btn btn-ghost btn-sm" onClick={copy} style={{ fontFamily: "var(--mono)" }}>
+      {copied ? "Copied ✓" : "Copy link"}
+    </button>
+  );
+}
+
 export function Lab({ bundle }: { bundle: LabBundle }) {
   const { report, verify, meta } = bundle;
   const [stage, setStage] = useState<Stage>("diagnose");
@@ -118,6 +143,7 @@ export function Lab({ bundle }: { bundle: LabBundle }) {
                 view on GitHub ↗
               </a>
             ) : null}
+            {bundle.source === "github" ? <CopyLink /> : null}
           </div>
         </div>
         <div className="pulse-pair">
