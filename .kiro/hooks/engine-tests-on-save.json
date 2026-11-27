@@ -5,7 +5,7 @@
       "name": "Engine tests on save",
       "description": "Whenever an engine source file is saved, run the engine unit tests and fix any regression before continuing.",
       "trigger": "PostFileSave",
-      "matcher": "engine/.*[^/]*\\.ts$",
+      "matcher": "engine[\\\\/][^\\\\/]+\\.ts$",
       "action": {
         "type": "agent",
         "prompt": "An engine file was just edited. Run `npm test` and `npm run typecheck`. If anything fails, explain the root cause in one sentence and fix it in the engine (never by weakening the test). Follow the steering in codemods.md."
