@@ -171,43 +171,19 @@ export function generateTests(files: FileMap, pkg: any): GeneratedTest[] {
       const r = findRoutes(files[f]);
       if (!r) continue;
       const seen = new Set<string>();
-      const getRoutes = r.routes.filter(([m, p]) => m === "GET" && !p.includes(":") && !p.includes("{"));
       const its = r.routes
         .filter(([m, p]) => !seen.has(m + p) && (seen.add(m + p), true))
         .map(([m, p]) => {
           cases++;
           const probe = probePath(p);
-          const isSnapGet = m === "GET" && getRoutes.some(([, gp]) => gp === p);
-          const fetchCall = m === "GET"
-            ? `fetch(base + ${q(probe)}, { method: 'GET' })`
-            : `fetch(base + ${q(probe)}, { method: ${q(m)}, headers: { 'content-type': 'application/json' }, body: '{}' })`;
-          const snapshotAssert = isSnapGet ? `
-    if (snapshot) {
-      const key = ${q(m + " " + p)};
-      const entry = snapshot[key];
-      if (entry) {
-        assert.equal(res.status, entry.status, ${q(m + " " + probe)} + ' status changed');
-        const ct = (res.headers.get('content-type') || '').split(';')[0].trim();
-        assert.equal(ct, entry.contentType, ${q(m + " " + probe)} + ' content-type changed');
-        if (entry.shape !== 'text') {
-          const body = await res.clone().json().catch(() => null);
-          if (body !== null) { assert.deepStrictEqual(jsonShape(body), entry.shape, ${q(m + " " + probe)} + ' response shape changed'); }
-        }
-      } else if (process.env.NECRO_RECORD === '1') {
-        const ct = (res.headers.get('content-type') || '').split(';')[0].trim();
-        const isJson = ct.includes('json');
-        const body = isJson ? await res.clone().json().catch(() => null) : null;
-        snapshot[key] = { status: res.status, contentType: ct, shape: body !== null ? jsonShape(body) : 'text' };
-      }
-    } else if (process.env.NECRO_RECORD === '1') {
-      const ct = (res.headers.get('content-type') || '').split(';')[0].trim();
-      const isJson = ct.includes('json');
-      const body = isJson ? await res.clone().json().catch(() => null) : null;
-      snapshot[${q(m + " " + p)}] = { status: res.status, contentType: ct, shape: body !== null ? jsonShape(body) : 'text' };
-    }` : "";
-          return `  test(${q(`${m} ${p} never crashes with a 500`)}, async () => {
-    const res = await ${fetchCall};
-    assert.notEqual(res.status, 500, ${q(`${m} ${probe}`)} + ' returned ' + res.status + ': ' + (await res.text()).slice(0, 200));${snapshotAssert}
+          // golden master only for parameterless GET routes
+          const snap = m === "GET" && !p.includes(":") && !p.includes("{");
+          const init = m === "GET" ? `{ method: 'GET' }` : `{ method: ${q(m)}, headers: { 'content-type': 'application/json' }, body: '{}' }`;
+          return `  test(${q(`${m} ${p} never crashes with a 500${snap ? " and keeps its response shape" : ""}`)}, async () => {
+    const res = await fetch(base + ${q(probe)}, ${init});
+    const text = await res.text();
+    assert.notEqual(res.status, 500, ${q(`${m} ${probe}`)} + ' returned 500: ' + text.slice(0, 200));${snap ? `
+    goldenMaster(snapshot, ${q(`${m} ${p}`)}, res, text);` : ""}
   });`;
         })
         .join("\n\n");
@@ -254,6 +230,22 @@ function jsonShape(v) {
     return out;
   }
   return typeof v;
+}
+
+// Golden master: NECRO_RECORD=1 records { status, contentType, shape } from the
+// legacy tree; otherwise any recorded entry must match exactly.
+function goldenMaster(snapshot, key, res, text) {
+  if (!snapshot) { return; }
+  const contentType = (res.headers.get('content-type') || '').split(';')[0].trim();
+  let shape = 'text';
+  if (/json/.test(contentType)) {
+    try { shape = jsonShape(JSON.parse(text)); } catch { shape = 'text'; }
+  }
+  const observed = { status: res.status, contentType: contentType, shape: shape };
+  if (process.env.NECRO_RECORD === '1') { snapshot[key] = observed; return; }
+  if (snapshot[key]) {
+    assert.deepStrictEqual(observed, snapshot[key], key + ' drifted from the legacy golden master');
+  }
 }
 `;
       tests.push({ path: `${TEST_DIR}/routes.test.cjs`, strategy: "route-smoke", cases, content: HEADER("HTTP route smoke tests") + shapeHelper + "\n" + parts.join("\n\n") + "\n" });
