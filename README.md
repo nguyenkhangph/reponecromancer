@@ -1,5 +1,7 @@
 # ⚰️⚡ RepoNecromancer
 
+[![CI](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml/badge.svg)](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-8dff5c.svg)](LICENSE) [![Live lab](https://img.shields.io/badge/live-reponecromancer.vercel.app-a983ff.svg)](https://reponecromancer.vercel.app)
+
 **Raise dead repos. Prove they live.**
 
 RepoNecromancer exhumes abandoned JavaScript/Node.js projects, diagnoses what
