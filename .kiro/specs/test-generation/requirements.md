@@ -36,3 +36,12 @@ the resurrected tree using only `node:test` (zero dependencies).
 
 1. THE SYSTEM SHALL write suites to `test/necro/*.test.cjs` and set `scripts.test` to `node --test <files>` (appending to an existing mocha suite when one exists).
 2. THE verification script SHALL run the same suite on both trees and record per-case results with a JSON reporter.
+
+### Requirement 6 — Golden-master HTTP snapshots
+
+For every GET route with no path parameters (no `:param` or `{` segments), the generated `routes.test.cjs` captures a structural snapshot of the legacy response and asserts the resurrected tree matches it.
+
+1. WHEN `NECRO_RECORD=1` THE SYSTEM SHALL write `{ status, contentType, shape }` for each parameterless GET route to `test/necro/__snapshots__/routes.json`, where `shape` is the JSON structure (keys + value types, arrays reduced to the shape of their first element, `null` → `"null"`), never raw values.
+2. WHEN the snapshot file exists and `NECRO_RECORD` is not set THE SYSTEM SHALL assert `deepStrictEqual` against the recorded shape for each matching GET test.
+3. IF no snapshot file exists THEN THE SYSTEM SHALL behave exactly as the existing route-smoke suite (500-check only).
+4. THE verification script SHALL run the BEFORE tree with `NECRO_RECORD=1`, copy the resulting snapshot into the AFTER tree, then run the AFTER suite normally. IF the legacy tree cannot install or the record step produces no snapshot THEN the script SHALL skip the snapshot without failing.

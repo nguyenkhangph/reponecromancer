@@ -8,11 +8,12 @@
  *   npm run necro:verify -- ghost-todo-api
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync, copyFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import { applyPatches, npmRegistry, resurrect } from "../engine/index";
+import { SNAPSHOT_FILE, SNAPSHOT_DIR } from "../engine/testgen";
 import type { FileMap, NecropsyReport, RunResult, TestCaseResult, VerifyRecord } from "../engine/types";
 
 const ROOT = resolve(import.meta.dirname, "..");
@@ -59,7 +60,7 @@ function run(cmd: string, args: string[], cwd: string, timeoutMs: number) {
   return { ok: r.status === 0, status: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") + (timedOut ? `\n[necro] timed out after ${timeoutMs / 1000}s` : r.error ? `\n[necro] ${r.error.message}` : ""), ms: Date.now() - t0 };
 }
 
-function runTree(dir: string, testFiles: string[], checks: Array<{ name: string; script: string }>): RunResult {
+function runTree(dir: string, testFiles: string[], checks: Array<{ name: string; script: string }>, extraEnv: Record<string, string> = {}): RunResult {
   const install = run("npm", ["install", "--no-audit", "--no-fund", "--loglevel=error"], dir, 240_000);
   const jsonl = join(dir, ".necro-results.jsonl");
   const t0 = Date.now();
@@ -67,7 +68,7 @@ function runTree(dir: string, testFiles: string[], checks: Array<{ name: string;
     cwd: dir,
     encoding: "utf8",
     timeout: 120_000,
-    env: { ...process.env, NODE_ENV: "test", FORCE_COLOR: "0" },
+    env: { ...process.env, NODE_ENV: "test", FORCE_COLOR: "0", ...extraEnv },
   });
   const cases: TestCaseResult[] = existsSync(jsonl)
     ? readFileSync(jsonl, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l))
@@ -100,11 +101,22 @@ async function verifyPreset(id: string) {
   for (const t of report.tests) before[t.path] = t.content;
   writeTree(join(work, "before"), before);
   console.log(`\n⚰  ${id}: verifying legacy tree…`);
-  const beforeRun = runTree(join(work, "before"), testFiles, []);
+  const beforeRun = runTree(join(work, "before"), testFiles, [], { NECRO_RECORD: "1" });
+
+  // Copy golden-master snapshot from BEFORE into AFTER (best-effort; skip if missing)
+  const beforeSnap = join(work, "before", SNAPSHOT_FILE);
+  const afterSnapDir = join(work, "after", SNAPSHOT_DIR);
+  const afterSnap = join(work, "after", SNAPSHOT_FILE);
 
   // AFTER: resurrected tree
   const after = applyPatches(files, report);
   writeTree(join(work, "after"), after);
+
+  if (beforeRun.install.ok && existsSync(beforeSnap)) {
+    mkdirSync(afterSnapDir, { recursive: true });
+    copyFileSync(beforeSnap, afterSnap);
+  }
+
   const pkg = JSON.parse(after["package.json"]);
   const checks = [
     ...(pkg.scripts?.lint ? [{ name: "lint", script: "lint" }] : []),
@@ -112,7 +124,6 @@ async function verifyPreset(id: string) {
   ];
   console.log(`⚡ ${id}: verifying resurrected tree…`);
   const afterRun = runTree(join(work, "after"), testFiles, checks);
-
   const npmV = run("npm", ["--version"], work, 20_000).out.trim();
   const verify: VerifyRecord = { node: process.version, npm: npmV, verifiedAt: new Date().toISOString(), before: beforeRun, after: afterRun };
   mkdirSync(OUT, { recursive: true });

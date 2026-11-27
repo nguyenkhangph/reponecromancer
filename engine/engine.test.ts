@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { applyCodemods } from "./codemods";
 import { resurrect, snapshotRegistry, applyPatches } from "./index";
 import { generateTests } from "./testgen";
+import { jsonShape } from "./testgen-shape";
 import { parseRepoInput } from "./github";
 
 const run = (code: string, path = "app.js") => applyCodemods(path, code, {});
@@ -134,6 +135,18 @@ test("compat shims keep request (callback) and request-promise (body, rejects no
   } finally {
     server.close();
   }
+});
+
+test("jsonShape reduces nested objects, arrays, null, and primitives", () => {
+  assert.deepEqual(jsonShape(null), "null");
+  assert.deepEqual(jsonShape("hello"), "string");
+  assert.deepEqual(jsonShape(42), "number");
+  assert.deepEqual(jsonShape(true), "boolean");
+  assert.deepEqual(jsonShape([]), []);
+  assert.deepEqual(jsonShape([1, 2, 3]), ["number"]);
+  assert.deepEqual(jsonShape({ a: 1, b: "x" }), { a: "number", b: "string" });
+  assert.deepEqual(jsonShape({ items: [{ id: 1, name: "ghost" }], total: 1 }), { items: [{ id: "number", name: "string" }], total: "number" });
+  assert.deepEqual(jsonShape({ nested: { deep: null } }), { nested: { deep: "null" } });
 });
 
 test("parseRepoInput accepts urls and owner/repo", () => {

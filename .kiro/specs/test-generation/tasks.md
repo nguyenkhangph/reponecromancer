@@ -7,4 +7,4 @@
 - [x] 5. Server and CLI boot tests — _Req 4_
 - [x] 6. package.json `scripts.test` wiring — _Req 5.1_
 - [x] 7. JSON reporter + verification script recording both trees — _Req 5.2_
-- [ ] 8. Golden-master HTTP snapshots recorded from the legacy tree (stretch)
+- [x] 8. Golden-master HTTP snapshots recorded from the legacy tree (stretch)

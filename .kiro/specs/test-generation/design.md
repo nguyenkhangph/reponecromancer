@@ -15,6 +15,7 @@ Sources of truth, from strongest to weakest:
 |---|---|---|
 | `jsdoc-example` | author-documented input → output | semantic drift (e.g. left-pad's `0` padding) |
 | `route-smoke` | every HTTP route answers without a 500 | removed Express APIs (`req.param`, `res.send(status, …)`) |
+| `route-snapshot` | parameterless GET shape matches golden master | status, content-type, and JSON structure regressions |
 | `module-load` | module evaluates | `GLOBAL`, `process.EventEmitter`, missing deps |
 | `entrypoint-boot` | process stays alive / CLI doesn't stack-trace | `util.puts`, `os.tmpDir()` at startup |
 
@@ -26,9 +27,10 @@ sequenceDiagram
   participant B as before/ (corpse + tests)
   participant A as after/ (resurrected)
   V->>B: npm install
-  V->>B: node --test --test-reporter=json-reporter.mjs
+  V->>B: node --test NECRO_RECORD=1 (records routes.json golden master)
   V->>A: npm install
-  V->>A: node --test …
+  V->>A: copy test/necro/__snapshots__/routes.json from before/
+  V->>A: node --test … (asserts shape against golden master)
   V->>A: npm run lint / build (if present)
   V->>V: data/presets/<id>.json
 ```
