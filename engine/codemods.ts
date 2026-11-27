@@ -1,7 +1,7 @@
 import MagicString from "magic-string";
 import { parseJs, walk, collectBindings, requireTarget, lineOf, lineText, chainRoot, propName, type AnyNode } from "./ast";
 import type { CodeFinding, FileMap, Severity } from "./types";
-import { REQUEST_SHIM, REQUEST_SHIM_PATH } from "./shims";
+import { REQUEST_SHIM, REQUEST_SHIM_PATH, REQUEST_PROMISE_SHIM, REQUEST_PROMISE_SHIM_PATH } from "./shims";
 
 export interface CodemodResult {
   code: string;
@@ -32,7 +32,7 @@ export const RULES: Record<string, { title: string; severity: Severity }> = {
   "express-req-param": { title: "req.param() removed in Express 5", severity: "critical" },
   "express-sendfile": { title: "res.sendfile() → res.sendFile()", severity: "critical" },
   "express-path-syntax": { title: "Route wildcards/optional params changed in Express 5", severity: "critical" },
-  "request-to-fetch-shim": { title: "request → native fetch compat shim", severity: "critical" },
+  "request-to-fetch-shim": { title: "request / request-promise → native fetch compat shim", severity: "critical" },
   "node-uuid-to-crypto": { title: "node-uuid → crypto.randomUUID()", severity: "warning" },
   "moment-to-dayjs": { title: "moment → dayjs (+ plugins)", severity: "warning" },
   "left-pad-to-padstart": { title: "left-pad → String.prototype.padStart", severity: "warning" },
@@ -181,9 +181,12 @@ export function applyCodemods(path: string, input: string, allFiles: FileMap): C
         introduced.add("dayjs");
       }
       if (req === "request" || req === "request-promise") {
-        const rel = posixRelative(path, REQUEST_SHIM_PATH);
+        // request-promise resolves with the body and rejects non-2xx: it gets its own shim
+        const target = req === "request" ? REQUEST_SHIM_PATH : REQUEST_PROMISE_SHIM_PATH;
+        const rel = posixRelative(path, target);
         safe(() => ms.overwrite(node.arguments[0].start, node.arguments[0].end, `'${rel}'`), "request-to-fetch-shim", node.start, req);
         addFiles[REQUEST_SHIM_PATH] = REQUEST_SHIM;
+        if (req === "request-promise") addFiles[REQUEST_PROMISE_SHIM_PATH] = REQUEST_PROMISE_SHIM;
       }
       if (req === "domain") record("domain-module", code, node.start, false);
 

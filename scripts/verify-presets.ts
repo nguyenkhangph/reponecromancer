@@ -11,13 +11,15 @@ import { spawnSync } from "node:child_process";
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 import { applyPatches, npmRegistry, resurrect } from "../engine/index";
 import type { FileMap, NecropsyReport, RunResult, TestCaseResult, VerifyRecord } from "../engine/types";
 
 const ROOT = resolve(import.meta.dirname, "..");
 const PRESETS = join(ROOT, "presets");
 const OUT = join(ROOT, "data", "presets");
-const REPORTER = join(ROOT, "scripts", "json-reporter.mjs");
+// file:// URL so the reporter also loads on Windows (D:\ paths are not valid ESM specifiers)
+const REPORTER = pathToFileURL(join(ROOT, "scripts", "json-reporter.mjs")).href;
 
 export function loadDir(dir: string): FileMap {
   const out: FileMap = {};
@@ -49,7 +51,8 @@ function tail(s: string, n = 6000) {
 
 function run(cmd: string, args: string[], cwd: string, timeoutMs: number) {
   const t0 = Date.now();
-  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", timeout: timeoutMs, env: { ...process.env, NODE_ENV: "test", CI: "1", npm_config_update_notifier: "false" } });
+  // npm is npm.cmd on Windows: spawn through the shell there
+  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", timeout: timeoutMs, shell: process.platform === "win32", env: { ...process.env, NODE_ENV: "test", CI: "1", npm_config_update_notifier: "false" } });
   const timedOut = r.error && (r.error as any).code === "ETIMEDOUT";
   return { ok: r.status === 0, status: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") + (timedOut ? `\n[necro] timed out after ${timeoutMs / 1000}s` : r.error ? `\n[necro] ${r.error.message}` : ""), ms: Date.now() - t0 };
 }

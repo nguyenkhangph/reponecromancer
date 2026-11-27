@@ -93,8 +93,47 @@ test("request-promise is flagged as deprecated in the graveyard", async () => {
   assert.equal(rpDep.status, "deprecated");
   assert.equal(rpDep.action.type, "remove");
   assert.ok(r.patches.some((p) => p.path === "necro-compat/request.js" && p.kind === "added"));
+  assert.ok(r.patches.some((p) => p.path === "necro-compat/request-promise.js" && p.kind === "added"));
+  assert.match(r.patches.find((p) => p.path === "index.js")!.after!, /require\('\.\/necro-compat\/request-promise\.js'\)/);
   const pkg = JSON.parse(r.patches.find((p) => p.path === "package.json")!.after!);
   assert.ok(!pkg.dependencies?.["request-promise"], "request-promise must be removed from package.json");
+});
+
+test("compat shims keep request (callback) and request-promise (body, rejects non-2xx) semantics", async () => {
+  const { mkdtempSync, writeFileSync, mkdirSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { createRequire } = await import("node:module");
+  const http = await import("node:http");
+  const { REQUEST_SHIM, REQUEST_PROMISE_SHIM } = await import("./shims");
+  const dir = mkdtempSync(join(tmpdir(), "necro-shim-"));
+  mkdirSync(join(dir, "necro-compat"));
+  writeFileSync(join(dir, "necro-compat", "request.js"), REQUEST_SHIM);
+  writeFileSync(join(dir, "necro-compat", "request-promise.js"), REQUEST_PROMISE_SHIM);
+  const req = createRequire(join(dir, "x.js"));
+  const request = req("./necro-compat/request.js");
+  const rp = req("./necro-compat/request-promise.js");
+
+  const server = http.createServer((q, s) => {
+    if (q.url === "/missing") { s.statusCode = 404; s.end("nope"); return; }
+    s.setHeader("content-type", "application/json");
+    s.end(JSON.stringify({ ok: true, method: q.method }));
+  });
+  await new Promise<void>((res) => server.listen(0, "127.0.0.1", () => res()));
+  const base = `http://127.0.0.1:${(server.address() as any).port}`;
+  try {
+    const cb = await new Promise<any>((res, rej) => request({ uri: base + "/x", json: true }, (e: any, r: any, body: any) => (e ? rej(e) : res({ r, body }))));
+    assert.equal(cb.r.statusCode, 200);
+    assert.deepEqual(cb.body, { ok: true, method: "GET" });
+
+    assert.deepEqual(await rp({ uri: base + "/x", json: true }), { ok: true, method: "GET" });
+    assert.deepEqual(await rp.post({ uri: base + "/x", json: true, body: { a: 1 } }), { ok: true, method: "POST" });
+    assert.equal((await rp({ uri: base + "/x", resolveWithFullResponse: true })).statusCode, 200);
+    await assert.rejects(rp(base + "/missing"), (e: any) => e.name === "StatusCodeError" && e.statusCode === 404);
+    assert.equal(await rp({ uri: base + "/missing", simple: false }), "nope");
+  } finally {
+    server.close();
+  }
 });
 
 test("parseRepoInput accepts urls and owner/repo", () => {

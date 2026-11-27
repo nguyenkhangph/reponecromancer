@@ -80,3 +80,49 @@ request.del = request.delete;
 
 module.exports = request;
 `;
+
+export const REQUEST_PROMISE_SHIM_PATH = "necro-compat/request-promise.js";
+
+/**
+ * request-promise semantics on top of the fetch-based request shim:
+ * resolves with the body (or the full response with resolveWithFullResponse),
+ * and rejects non-2xx responses unless `simple: false`.
+ */
+export const REQUEST_PROMISE_SHIM = `'use strict';
+// RepoNecromancer compat shim — the deprecated \`request-promise\` API on top of
+// native fetch() (Node 18+), via ./request.js.
+var request = require('./request');
+
+function StatusCodeError(statusCode, body, options, response) {
+  var err = new Error(statusCode + ' - ' + (typeof body === 'string' ? body : JSON.stringify(body)));
+  err.name = 'StatusCodeError';
+  err.statusCode = statusCode;
+  err.error = body;
+  err.options = options;
+  err.response = response;
+  return err;
+}
+
+function wrap(method) {
+  return function (uri, options) {
+    var opts = typeof uri === 'object' && uri !== null ? Object.assign({}, uri) : Object.assign({}, options, { uri: uri });
+    if (method) {
+      opts.method = method;
+    }
+    var call = method ? request[method] : request;
+    return call(opts).then(function (res) {
+      var ok = res.statusCode >= 200 && res.statusCode < 300;
+      if (!ok && opts.simple !== false) {
+        throw StatusCodeError(res.statusCode, res.body, opts, res);
+      }
+      return opts.resolveWithFullResponse ? res : res.body;
+    });
+  };
+}
+
+var rp = wrap(null);
+['get', 'post', 'put', 'patch', 'head', 'delete'].forEach(function (m) { rp[m] = wrap(m); });
+rp.del = rp.delete;
+
+module.exports = rp;
+`;

@@ -28,7 +28,7 @@ that patch breaking changes while preserving formatting and behaviour.
 
 ### Requirement 4 — Dead packages → native
 
-1. `request` and `request-promise` → generated fetch-based compat shim (`necro-compat/request.js`).
+1. `request` → generated fetch-based compat shim (`necro-compat/request.js`, callback API). `request-promise` → `necro-compat/request-promise.js`, which resolves with the body (or the full response with `resolveWithFullResponse`) and rejects non-2xx with `StatusCodeError` unless `simple: false` — the shims must preserve each library's semantics, verified by a live HTTP test.
 2. `node-uuid` → `node:crypto` `randomUUID()`.
 3. `moment` → `dayjs` plus only the plugins the file needs.
 4. `left-pad`, `mkdirp`, `rimraf` → `padStart`, `fs.mkdir*`, `fs.rm*`; requires removed.
