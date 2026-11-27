@@ -60,7 +60,7 @@ function buildScript(b: LabBundle): Line[][] {
   for (const p of r.patches.filter((p) => p.kind !== "modified" && !p.path.startsWith("test/necro"))) {
     s[2].push({ text: `  ${p.kind === "added" ? "+" : "−"} ${p.path.padEnd(28)} ${p.reasons[0] ?? ""}`, cls: p.kind === "added" ? "ok" : "bad" });
   }
-  const open = r.code.filter((c) => !c.fixed);
+  const open = r.code.filter((c) => !c.fixed && c.rule !== "callback-to-promise");
   if (open.length) s[2].push({ text: `  ⚠ ${open.length} call site(s) flagged for a human`, cls: "bad" });
 
   s[3].push({ text: "$ necro galvanize --runner node:test", cls: "h" });
