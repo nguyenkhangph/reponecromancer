@@ -55,7 +55,8 @@ tests; the Express 3 API goes to 17/17 with lint green.
   or a specimen re-runs the real before/after verification (the kind of check
   that exposed `new Buffer(buf.length)` → `Buffer.from(number)` during
   development); a checklist hook keeps the graveyard, tests and specs in sync; an
-  `agentStop` hook ticks spec tasks; a manual hook drafts this write-up.
+  `Stop` hook ticks spec tasks; a manual `#devpost-writeup` steering prompt
+  drafts this write-up.
 - **MCP.** `.kiro/settings/mcp.json` configures a `fetch` server (npm registry
   metadata, changelogs for the graveyard) and a `github` server (pulling real
   legacy repos to test intake). _TODO: add one concrete example of each._

@@ -85,10 +85,11 @@ Everything Kiro used lives in [`/.kiro`](.kiro) and is committed on purpose.
   `tech.md` (stack rules), `structure.md` (map of the repo), `codemods.md`
   (how to write a safe rule — auto-included when editing the engine) and
   `lab-ui.md` (the visual language — auto-included for UI files).
-- **Hooks** (`.kiro/hooks/`): run engine tests on save; re-verify specimens
-  when a codemod or preset changes; enforce the new-codemod checklist; keep
-  spec checkboxes honest when the agent stops; draft the Devpost section on
-  demand.
+- **Hooks** (`.kiro/hooks/*.json`, Kiro v1 format): run engine tests on save;
+  re-verify specimens when a codemod or preset changes; enforce the
+  new-codemod checklist; keep spec checkboxes honest when the agent stops.
+  The on-demand Devpost write-up lives as a manual steering file
+  (`#devpost-writeup` in chat).
 - **MCP** (`.kiro/settings/mcp.json`): `fetch` for npm registry and changelog
   lookups while curating the graveyard, `github` for pulling real legacy repos
   to test against.
