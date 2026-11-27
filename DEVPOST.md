@@ -43,8 +43,13 @@ tests; the Express 3 API goes to 17/17 with lint green.
   The requirements use EARS ("WHEN code calls `util.puts` … THE SYSTEM SHALL
   …"), the designs fixed the key architecture decisions (codemods *before* the
   dependency audit; a two-pass AST surgery; a `request`→`fetch` shim instead
-  of a control-flow rewrite), and `tasks.md` tracks implementation.
-  _TODO: describe which tasks you drove through Kiro's spec workflow._
+  of a control-flow rewrite), and `tasks.md` tracks implementation. Example:
+  we asked Kiro to add `request-promise` to the graveyard. It read the
+  specs, ran the tests first, wrote the graveyard entry and a unit test, and
+  the hooks then updated `migration-plan` requirement 4.1 and the task lists
+  in two specs. Review against the spec's "preserve behaviour" principle
+  caught that request-promise resolves with the *body* and rejects non-2xx,
+  so it got its own shim plus a live-HTTP semantics test.
 - **Steering docs.** `product.md` set the "evidence over vibes" and
   "deterministic engine" rules and the vocabulary used everywhere in the UI.
   `codemods.md` is scoped by `fileMatch` to the engine, so every new rule
