@@ -45,3 +45,10 @@ that patch breaking changes while preserving formatting and behaviour.
 
 1. IF two edits overlap THEN THE SYSTEM SHALL keep the first, record the second as `fixed: false`, and never throw.
 2. THE SYSTEM SHALL leave every byte outside an edited range unchanged.
+
+### Requirement 7 — Callback → async/await suggestions
+
+1. WHEN code calls `readFile`, `writeFile`, `readdir`, `stat`, `mkdir`, `unlink`, or `access` on a `require('fs')` or `require('node:fs')` binding AND the last argument is a function expression whose first parameter is named `err`, `error`, or `e`, THE SYSTEM SHALL emit a `callback-to-promise` finding with `fixed: false` and message `fs.<name>(…, callback) → await fs.promises.<name>(…)`.
+2. THE SYSTEM SHALL NOT modify any code for this rule — it is flag-only.
+3. THE SYSTEM SHALL exclude `callback-to-promise` findings from the `pulseAfter` penalty calculation so they do not lower the projected health score.
+4. THE SYSTEM SHALL display `callback-to-promise` findings in a separate "Suggestions (optional modernisation)" panel in the Diagnose stage, distinct from breaking changes, and SHALL NOT count them in the "breaking call sites" vital.

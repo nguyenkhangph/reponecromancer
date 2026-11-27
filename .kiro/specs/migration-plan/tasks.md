@@ -8,6 +8,7 @@
 - [x] 6. jQuery rules: bind/unbind, delegate/live, size, static utils, $.browser + dead-branch removal — _Req 5_
 - [x] 7. Pass 2: require cleanup for fully migrated modules (incl. util after util-print) — _Req 2.1, 4.4_
 - [x] 8. Plan builder in `resurrect()` — _Req 1_
-- [x] 9. Flag-only rules: fs.exists, url.parse, domain — _Req 6_
+- [x] 9. Flag-only rules: fs.exists, url.parse, domain — _Req 6 (safety); no dedicated functional requirement yet — see TODO below_
 - [x] 10. Verify on all specimens with lint + build checks (`npm run necro:verify`)
-- [ ] 11. Callback → async/await suggestions (flag-only, stretch)
+- [x] 11. Callback → async/await suggestions (flag-only, stretch) — _Req 7_
+- [ ] TODO: add a Requirement 8 covering fs.exists, url.parse, and domain flag-only rules (currently undocumented in requirements.md)

@@ -173,7 +173,7 @@ export async function resurrect(files: FileMap, opts: ResurrectOptions): Promise
   const allSev: Severity[] = [...deps.findings.filter((d) => d.status !== "healthy" && d.status !== "unknown").map((d) => d.severity), ...configs.findings.map((c) => c.severity), ...code.map((c) => c.severity)];
   const pulse = (sevs: Severity[]) => Math.round(100 * Math.exp(-sevs.reduce((s, v) => s + PENALTY[v], 0) / 140));
   const pulseBefore = Math.max(1, pulse(allSev));
-  const openSev: Severity[] = [...code.filter((c) => !c.fixed).map((c) => c.severity), ...deps.findings.filter((d) => d.action.type === "keep" && d.status !== "healthy" && d.status !== "unknown").map((d) => d.severity)];
+  const openSev: Severity[] = [...code.filter((c) => !c.fixed && c.rule !== "callback-to-promise").map((c) => c.severity), ...deps.findings.filter((d) => d.action.type === "keep" && d.status !== "healthy" && d.status !== "unknown").map((d) => d.severity)];
   const pulseAfter = Math.max(pulseBefore, pulse(openSev));
 
   const worst = [

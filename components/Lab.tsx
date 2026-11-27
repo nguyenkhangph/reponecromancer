@@ -92,7 +92,7 @@ export function Lab({ bundle }: { bundle: LabBundle }) {
   const v = report.vitals;
 
   const dead = report.deps.filter((d) => d.status === "dead" || d.status === "deprecated").length;
-  const breaking = report.code.filter((c) => c.severity === "fatal" || c.severity === "critical").length;
+  const breaking = report.code.filter((c) => (c.severity === "fatal" || c.severity === "critical") && c.rule !== "callback-to-promise").length;
 
   return (
     <>
@@ -184,6 +184,8 @@ export function Lab({ bundle }: { bundle: LabBundle }) {
 
 function Diagnose({ bundle, dead, breaking, onNext }: { bundle: LabBundle; dead: number; breaking: number; onNext: () => void }) {
   const r = bundle.report;
+  const suggestions = r.code.filter((c) => c.rule === "callback-to-promise");
+  const breakingCode = r.code.filter((c) => c.rule !== "callback-to-promise");
   return (
     <div>
       <div className="callout">
@@ -279,12 +281,12 @@ function Diagnose({ bundle, dead, breaking, onNext }: { bundle: LabBundle; dead:
         <header>
           <h3>Breaking changes in the code</h3>
           <span className="meta">
-            {r.code.filter((c) => c.fixed).length} patchable · {r.code.filter((c) => !c.fixed).length} flagged
+            {breakingCode.filter((c) => c.fixed).length} patchable · {breakingCode.filter((c) => !c.fixed).length} flagged
           </span>
         </header>
-        {r.code.length ? (
+        {breakingCode.length ? (
           <ul className="findings">
-            {r.code.map((c, i) => (
+            {breakingCode.map((c, i) => (
               <li key={i}>
                 <span className={`sev ${c.severity}`} title={SEV_LABEL[c.severity]} />
                 <div>
@@ -305,6 +307,29 @@ function Diagnose({ bundle, dead, breaking, onNext }: { bundle: LabBundle; dead:
           </div>
         )}
       </div>
+
+      {suggestions.length ? (
+        <div className="panel">
+          <header>
+            <h3>Suggestions <span className="meta" style={{ fontWeight: "normal" }}>(optional modernisation)</span></h3>
+            <span className="meta">{suggestions.length} hint{suggestions.length === 1 ? "" : "s"} · won't block resurrection</span>
+          </header>
+          <ul className="findings">
+            {suggestions.map((c, i) => (
+              <li key={i}>
+                <span className={`sev ${c.severity}`} title={SEV_LABEL[c.severity]} />
+                <div>
+                  <div className="msg">{c.message}</div>
+                  <div className="snip">{c.snippet}</div>
+                </div>
+                <span className="where">
+                  {c.file}:{c.line}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="panel">
         <header>

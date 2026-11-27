@@ -155,6 +155,24 @@ test("parseRepoInput accepts urls and owner/repo", () => {
   assert.equal(parseRepoInput("not a repo"), null);
 });
 
+test("callback-to-promise: detects fs.readFile with err-param callback", () => {
+  const r = run(`var fs = require('fs');\nfs.readFile(p, function (err, data) {});\n`);
+  const f = r.findings.find((x) => x.rule === "callback-to-promise");
+  assert.ok(f, "should emit a callback-to-promise finding");
+  assert.equal(f!.fixed, false);
+  assert.match(f!.message, /fs\.readFile\(…, callback\) → await fs\.promises\.readFile\(…\)/);
+});
+
+test("callback-to-promise: ignores fs.readFileSync", () => {
+  const r = run(`var fs = require('fs');\nfs.readFileSync(p);\n`);
+  assert.ok(!r.findings.some((x) => x.rule === "callback-to-promise"), "readFileSync must not trigger the rule");
+});
+
+test("callback-to-promise: ignores a non-fs object with readFile method", () => {
+  const r = run(`var db = require('some-db');\ndb.readFile(p, function (err, data) {});\n`);
+  assert.ok(!r.findings.some((x) => x.rule === "callback-to-promise"), "non-fs binding must not trigger the rule");
+});
+
 test("npm: aliases are looked up by their target package", async () => {
   const registry = snapshotRegistry({ typescript: { latest: "5.6.0" } });
   const r = await resurrect({ "package.json": JSON.stringify({ name: "x", devDependencies: { ts2: "npm:typescript@^2.9.2", local: "file:../x" } }) }, { registry });

@@ -47,6 +47,7 @@ export const RULES: Record<string, { title: string; severity: Severity }> = {
   "fs-exists": { title: "fs.exists() is deprecated", severity: "info" },
   "url-parse": { title: "url.parse() is legacy; prefer new URL()", severity: "info" },
   "domain-module": { title: "domain module is pending deprecation", severity: "info" },
+  "callback-to-promise": { title: "fs callback API → fs.promises (async/await)", severity: "info" },
 };
 
 const BUNDLED_MIDDLEWARE: Record<string, { pkg: string | null; factory?: string }> = {
@@ -256,6 +257,21 @@ export function applyCodemods(path: string, input: string, allFiles: FileMap): C
         }
         if ((objMod === "fs" || objMod === "node:fs") && p === "exists") record("fs-exists", code, node.start, false);
         if ((objMod === "url" || objMod === "node:url") && p === "parse") record("url-parse", code, node.start, false);
+
+        // --- callback-to-promise suggestions ---
+        const FS_CB_METHODS = ["readFile", "writeFile", "readdir", "stat", "mkdir", "unlink", "access"] as const;
+        if ((objMod === "fs" || objMod === "node:fs") && p && (FS_CB_METHODS as readonly string[]).includes(p)) {
+          const lastArg = node.arguments[node.arguments.length - 1];
+          if (
+            lastArg &&
+            (lastArg.type === "FunctionExpression" || lastArg.type === "ArrowFunctionExpression") &&
+            lastArg.params.length >= 1 &&
+            lastArg.params[0].type === "Identifier" &&
+            /^(err|error|e)$/.test(lastArg.params[0].name)
+          ) {
+            record("callback-to-promise", code, node.start, false, `fs.${p}(…, callback) → await fs.promises.${p}(…)`);
+          }
+        }
 
         // --- Express ---
         if (isApp(obj) && p === "del") {
