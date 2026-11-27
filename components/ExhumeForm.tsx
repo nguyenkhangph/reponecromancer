@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-const SUGGESTIONS = ["request/request", "substack/node-optimist", "bower/bower"];
+const SUGGESTIONS = ["request/request", "bower/bower", "gulpjs/gulp-util"];
 
 export function ExhumeForm() {
   const router = useRouter();

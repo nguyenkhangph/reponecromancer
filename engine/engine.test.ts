@@ -87,3 +87,13 @@ test("parseRepoInput accepts urls and owner/repo", () => {
   assert.deepEqual(parseRepoInput("a/b"), { owner: "a", repo: "b", ref: undefined });
   assert.equal(parseRepoInput("not a repo"), null);
 });
+
+test("npm: aliases are looked up by their target package", async () => {
+  const registry = snapshotRegistry({ typescript: { latest: "5.6.0" } });
+  const r = await resurrect({ "package.json": JSON.stringify({ name: "x", devDependencies: { ts2: "npm:typescript@^2.9.2", local: "file:../x" } }) }, { registry });
+  const ts2 = r.deps.find((d) => d.name === "ts2")!;
+  assert.equal(ts2.status, "outdated");
+  assert.equal(r.deps.find((d) => d.name === "local")!.status, "unknown");
+  const pkg = JSON.parse(r.patches.find((p) => p.path === "package.json")!.after!);
+  assert.equal(pkg.devDependencies.ts2, "npm:typescript@^5.6.0");
+});

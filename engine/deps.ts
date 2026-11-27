@@ -28,7 +28,27 @@ export async function auditDependencies(pkg: any, registry: RegistryLookup, o: D
     if (!entries.some((e) => e.name === n)) entries.push({ name: n, declared: v, section: "dependencies", fromBower: true });
   }
 
-  const infos = await Promise.all(entries.map((e) => registry(e.name)));
+  // npm: aliases resolve to their target; git/file/url specifiers are not on the registry
+  const lookupName = (e: { name: string; declared: string }) => {
+    const m = String(e.declared).match(/^npm:((?:@[^/]+\/)?[^@]+)@?(.*)$/);
+    return m ? m[1] : e.name;
+  };
+  const nonRegistry = (v: string) => /^(git|github:|file:|link:|https?:|workspace:)|\//.test(String(v)) && !String(v).startsWith("npm:");
+  const infos = await Promise.all(
+    entries.map((e) =>
+      nonRegistry(e.declared)
+        ? Promise.resolve({ name: e.name, latest: null, deprecated: null, modified: null, exists: true })
+        : registry(lookupName(e)),
+    ),
+  );
+  const aliasOf = new Map<string, string>();
+  for (const e of entries) {
+    const m = String(e.declared).match(/^npm:((?:@[^/]+\/)?[^@]+)@(.*)$/);
+    if (m) {
+      aliasOf.set(e.name, m[1]);
+      e.declared = m[2];
+    }
+  }
   const findings: DepFinding[] = [];
   const dependencies: Record<string, string> = {};
   const devDependencies: Record<string, string> = {};
@@ -121,6 +141,11 @@ export async function auditDependencies(pkg: any, registry: RegistryLookup, o: D
     const range = caret(info.latest);
     (dev ? devDependencies : dependencies)[n] = range;
     added.push({ name: n, range, dev, reason: INTRODUCED[n]?.reason ?? "Introduced by migration" });
+  }
+
+  // re-wrap npm: aliases so the alias keeps pointing at its target package
+  for (const [alias, target] of aliasOf) {
+    for (const bag of [dependencies, devDependencies]) if (alias in bag) bag[alias] = `npm:${target}@${bag[alias]}`;
   }
 
   const sort = (o: Record<string, string>) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)));
