@@ -21,8 +21,8 @@ hooks and MCP (see [`/.kiro`](.kiro) and the "Built with Kiro" section below).
 |---|---|---|
 | **01 Exhume** | Reads `package.json`, Bower, Grunt, Travis, JSHint and every JS source (GitHub or local) | `engine/github.ts`, `engine/configs.ts` |
 | **02 Transplant** | Audits every dependency against the live npm registry plus a curated *graveyard* (request, moment, node-uuid, left-pad, mkdirp, rimraf, optimist, bower, grunt, phantomjs, node-sass, tslint…) → remove / replace / upgrade | `engine/deps.ts`, `engine/knowledge.ts` |
-| **03 Suture** | 30 AST codemod rules: Express 3→5, Node core removals (`util.puts`, `new Buffer`, `GLOBAL`, `os.tmpDir`), dead packages → native APIs, jQuery 1→4. Formatting outside each edit is preserved byte-for-byte | `engine/codemods.ts` |
-| **04 Galvanize** | Generates `node:test` suites: JSDoc `@example` contracts, module-load, HTTP route smoke tests, server/CLI boot tests | `engine/testgen.ts` |
+| **03 Suture** | 31 AST codemod rules: Express 3→5, Node core removals (`util.puts`, `new Buffer`, `GLOBAL`, `os.tmpDir`), dead packages → native APIs (incl. `request`/`request-promise` fetch shims), jQuery 1→4, plus optional callback→async suggestions. Formatting outside each edit is preserved byte-for-byte | `engine/codemods.ts` |
+| **04 Galvanize** | Generates `node:test` suites: JSDoc `@example` contracts, module-load, HTTP route smoke tests with golden-master response shapes recorded from the legacy tree, server/CLI boot tests | `engine/testgen.ts` |
 | **05 Verify** | `npm install` + `node --test` (+ lint/build) on **both** trees; results are stored as evidence | `scripts/verify-presets.ts` |
 
 ### Verified specimens (real runs, Node 22)

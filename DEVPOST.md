@@ -1,6 +1,5 @@
 # Devpost draft — RepoNecromancer
 
-> ⚠️ Draft. Before submitting, replace every _TODO_ with what actually happened while you worked in Kiro (screenshots of specs/hooks firing help). Judges read this section closely — keep it factual.
 
 **Track:** Resurrection · **Bonus:** Kiro Crew, Best Demo
 
@@ -20,11 +19,12 @@ Point RepoNecromancer at a GitHub repo (or open a bundled specimen):
 1. **Exhume**: reads the manifest, configs and every source file.
 2. **Transplant**: audits each dependency against the live npm registry and a
    curated graveyard, then removes, replaces or upgrades it.
-3. **Suture**: 30 deterministic AST codemod rules patch the breaking changes
+3. **Suture**: 31 deterministic AST codemod rules patch the breaking changes
    (Express 3→5, Node core removals, jQuery 1→4, dead packages → native APIs)
    while leaving every other byte untouched.
 4. **Galvanize**: generates `node:test` regression suites from JSDoc
-   `@example`s, HTTP routes, module loads and entry points.
+   `@example`s, HTTP routes (with golden-master response shapes recorded from
+   the legacy tree), module loads and entry points.
 5. **Verify**: installs and tests both the corpse and the resurrected tree
    on Node 22.
 
@@ -94,8 +94,9 @@ tests; the Express 3 API goes to 17/17 with lint green.
 
 ## What's next
 
-Golden-master HTTP snapshots, callback→async suggestions, and graveyards for
-Python and Ruby.
+Graveyards for Python (setup.py/distutils, Python 2 idioms) and Ruby, automatic
+callback→async rewrites (today they are suggestions only), and a GitHub App
+that opens the resurrection as a pull request.
 
 ## Built with
 

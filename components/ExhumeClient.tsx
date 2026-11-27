@@ -8,7 +8,7 @@ import { Ecg } from "./bits";
 import { ExhumeForm } from "./ExhumeForm";
 import { Lab } from "./Lab";
 
-const STEPS = ["digging up the repository…", "reading package.json…", "asking the npm registry who died…", "running 30 codemods…", "writing regression tests…"];
+const STEPS = ["digging up the repository…", "reading package.json…", "asking the npm registry who died…", "running 31 codemods…", "writing regression tests…"];
 
 export function ExhumeClient() {
   const repo = useSearchParams().get("repo") ?? "";
