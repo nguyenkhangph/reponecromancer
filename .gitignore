@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+.env*.local
+scratch/
+*-resurrected/
+.DS_Store
+# NOTE: /.kiro is intentionally NOT ignored — it is part of the submission.

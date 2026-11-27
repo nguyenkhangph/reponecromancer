@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "name": "New codemod checklist",
+  "description": "When RULES or the graveyard changes, make sure the rule is tested, documented in the migration-plan spec and surfaced in the UI.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": ["engine/knowledge.ts"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The graveyard/knowledge base changed. For each new or changed package entry: (1) ensure engine/engine.test.ts covers it, (2) update .kiro/specs/migration-plan/requirements.md and tasks.md, (3) if it introduces a package make sure INTRODUCED has a reason. Summarise what you updated."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "Keep specs honest",
+  "description": "After the agent finishes a task, tick off completed spec tasks and record any behaviour that drifted from the requirements.",
+  "version": "1",
+  "when": {
+    "type": "agentStop"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Review the changes made in this session. Update the checkboxes in the matching .kiro/specs/*/tasks.md, and if implemented behaviour differs from requirements.md, either update the requirement (with a short rationale) or open a TODO task. Keep edits minimal."
+  }
+}

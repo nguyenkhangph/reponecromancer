@@ -1,0 +1,24 @@
+{
+  "name": "crypt-keeper",
+  "version": "0.2.0",
+  "description": "Seal secret notes into the crypt. A Node 0.8 command line toy.",
+  "main": "lib/crypt.js",
+  "bin": {
+    "crypt": "./bin/crypt.js"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "dependencies": {
+    "left-pad": "1.1.3",
+    "mkdirp": "0.3.4",
+    "optimist": "0.3.5",
+    "rimraf": "2.0.2"
+  },
+  "devDependencies": {
+    "mocha": "1.7.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  // Zombie house style
+  "browser": true,
+  "jquery": true,
+  "curly": true,
+  "eqeqeq": true,
+  "undef": true,
+  "predef": ["ZombieTime", "module"]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "jquery-zombie-countdown",
+  "version": "1.0.2",
+  "main": "src/jquery.zombie.js",
+  "dependencies": {
+    "jquery": "~1.11.0"
+  }
+}
