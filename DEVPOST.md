@@ -66,8 +66,11 @@ tests; the Express 3 API goes to 17/17 with lint green.
   entry) and read `bower/bower`'s package.json, finding 7 graveyard packages
   (request, mkdirp, rimraf, q, node-uuid, mocha, chai) — which is why
   bower/bower is one of the suggested repos in the lab. The `Stop` hook then
-  fired and confirmed no spec tasks needed updating. _TODO: add a `github`
-  MCP example once the token is configured._
+  fired and confirmed no spec tasks needed updating. With the `github` MCP
+  (`get_file_contents` on bower/bower v1.8.14) Kiro listed all 56
+  dependencies and flagged the same 7 graveyard packages — and surfaced
+  `"nock-legacy": "npm:nock@9.2.3"`, the npm-alias form our dependency audit
+  had initially misread as a dead package (now handled and unit-tested).
 
 ## Challenges
 
