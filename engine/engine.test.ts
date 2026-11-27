@@ -82,6 +82,21 @@ test("resurrect() produces a coherent package.json against an offline registry",
   assert.ok(r.vitals.pulseAfter > r.vitals.pulseBefore);
 });
 
+test("request-promise is flagged as deprecated in the graveyard", async () => {
+  const registry = snapshotRegistry({ "request-promise": { latest: "4.2.6", deprecated: "request-promise has been deprecated" } });
+  const files = {
+    "package.json": JSON.stringify({ name: "x", dependencies: { "request-promise": "^4.2.6" } }),
+    "index.js": `var rp = require('request-promise');\nrp('https://example.com').then(console.log);\n`,
+  };
+  const r = await resurrect(files, { registry });
+  const rpDep = r.deps.find((d) => d.name === "request-promise")!;
+  assert.equal(rpDep.status, "deprecated");
+  assert.equal(rpDep.action.type, "remove");
+  assert.ok(r.patches.some((p) => p.path === "necro-compat/request.js" && p.kind === "added"));
+  const pkg = JSON.parse(r.patches.find((p) => p.path === "package.json")!.after!);
+  assert.ok(!pkg.dependencies?.["request-promise"], "request-promise must be removed from package.json");
+});
+
 test("parseRepoInput accepts urls and owner/repo", () => {
   assert.deepEqual(parseRepoInput("https://github.com/a/b.git"), { owner: "a", repo: "b", ref: undefined });
   assert.deepEqual(parseRepoInput("a/b"), { owner: "a", repo: "b", ref: undefined });

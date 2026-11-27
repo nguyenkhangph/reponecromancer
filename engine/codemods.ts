@@ -180,9 +180,9 @@ export function applyCodemods(path: string, input: string, allFiles: FileMap): C
         safe(() => ms.overwrite(node.arguments[0].start, node.arguments[0].end, "'dayjs'"), "moment-to-dayjs", node.start, "moment");
         introduced.add("dayjs");
       }
-      if (req === "request") {
+      if (req === "request" || req === "request-promise") {
         const rel = posixRelative(path, REQUEST_SHIM_PATH);
-        safe(() => ms.overwrite(node.arguments[0].start, node.arguments[0].end, `'${rel}'`), "request-to-fetch-shim", node.start, "request");
+        safe(() => ms.overwrite(node.arguments[0].start, node.arguments[0].end, `'${rel}'`), "request-to-fetch-shim", node.start, req);
         addFiles[REQUEST_SHIM_PATH] = REQUEST_SHIM;
       }
       if (req === "domain") record("domain-module", code, node.start, false);

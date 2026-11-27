@@ -24,6 +24,12 @@ export const GRAVEYARD: Record<string, GraveEntry> = {
     action: "remove",
     codemods: ["request-to-fetch-shim"],
   },
+  "request-promise": {
+    status: "deprecated",
+    cause: "Deprecated together with request in Feb 2020; use native fetch().",
+    action: "remove",
+    codemods: ["request-to-fetch-shim"],
+  },
   "node-uuid": {
     status: "dead",
     cause: "Renamed to `uuid` in 2016; Node 14.17+ has crypto.randomUUID().",
