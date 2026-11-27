@@ -92,7 +92,8 @@ Everything Kiro used lives in [`/.kiro`](.kiro) and is committed on purpose.
   (`#devpost-writeup` in chat).
 - **MCP** (`.kiro/settings/mcp.json`): `fetch` for npm registry and changelog
   lookups while curating the graveyard, `github` for pulling real legacy repos
-  to test against.
+  to test against. Set a read-only `GITHUB_PERSONAL_ACCESS_TOKEN` in your
+  user environment; the server inherits it, so no token lives in the repo.
 
 ---
 
