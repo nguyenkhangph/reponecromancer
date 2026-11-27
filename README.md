@@ -1,6 +1,6 @@
 # ⚰️⚡ RepoNecromancer
 
-[![CI](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml/badge.svg)](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-8dff5c.svg)](LICENSE) [![Live lab](https://img.shields.io/badge/live-reponecromancer.vercel.app-a983ff.svg)](https://reponecromancer.vercel.app)
+[![CI](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml/badge.svg)](https://github.com/nguyenkhangph/reponecromancer/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-8dff5c.svg)](LICENSE) [![Live lab](https://img.shields.io/badge/live-reponecromancer.fun-a983ff.svg)](https://reponecromancer.fun)
 
 **Raise dead repos. Prove they live.**
 
@@ -13,7 +13,7 @@ resurrected tree on Node 22.
 Built for **Kiroween 2026, Resurrection track**, using Kiro specs, steering,
 hooks and MCP (see [`/.kiro`](.kiro) and the "Built with Kiro" section below).
 
-> Live lab: https://reponecromancer.vercel.app · Demo video: _(YouTube link, under 3 min)_
+> Live lab: https://reponecromancer.fun · Demo video: _(YouTube link, under 3 min)_
 
 ---
 

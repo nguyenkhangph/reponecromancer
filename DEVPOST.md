@@ -1,5 +1,7 @@
 # Devpost draft — RepoNecromancer
 
+**Live lab:** https://reponecromancer.fun · **Repo:** https://github.com/nguyenkhangph/reponecromancer
+
 
 **Track:** Resurrection · **Bonus:** Kiro Crew, Best Demo
 
