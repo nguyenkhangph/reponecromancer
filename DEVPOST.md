@@ -59,7 +59,15 @@ tests; the Express 3 API goes to 17/17 with lint green.
   drafts this write-up.
 - **MCP.** `.kiro/settings/mcp.json` configures a `fetch` server (npm registry
   metadata, changelogs for the graveyard) and a `github` server (pulling real
-  legacy repos to test intake). _TODO: add one concrete example of each._
+  legacy repos to test intake). Example: asked Kiro to cross-check the
+  graveyard against reality, it used the `fetch` MCP to read
+  `registry.npmjs.org/left-pad/latest` (confirming npm's own
+  "use String.prototype.padStart()" deprecation, matching our graveyard
+  entry) and read `bower/bower`'s package.json, finding 7 graveyard packages
+  (request, mkdirp, rimraf, q, node-uuid, mocha, chai) — which is why
+  bower/bower is one of the suggested repos in the lab. The `Stop` hook then
+  fired and confirmed no spec tasks needed updating. _TODO: add a `github`
+  MCP example once the token is configured._
 
 ## Challenges
 
