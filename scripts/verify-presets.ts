@@ -51,8 +51,10 @@ function tail(s: string, n = 6000) {
 
 function run(cmd: string, args: string[], cwd: string, timeoutMs: number) {
   const t0 = Date.now();
-  // npm is npm.cmd on Windows: spawn through the shell there
-  const r = spawnSync(cmd, args, { cwd, encoding: "utf8", timeout: timeoutMs, shell: process.platform === "win32", env: { ...process.env, NODE_ENV: "test", CI: "1", npm_config_update_notifier: "false" } });
+  // npm is npm.cmd on Windows: run it through the shell there, as one command
+  // string (args are fixed constants, never user input) to avoid DEP0190.
+  const win = process.platform === "win32";
+  const r = spawnSync(win ? [cmd, ...args].join(" ") : cmd, win ? [] : args, { cwd, encoding: "utf8", timeout: timeoutMs, shell: win, env: { ...process.env, NODE_ENV: "test", CI: "1", npm_config_update_notifier: "false" } });
   const timedOut = r.error && (r.error as any).code === "ETIMEDOUT";
   return { ok: r.status === 0, status: r.status, out: (r.stdout ?? "") + (r.stderr ?? "") + (timedOut ? `\n[necro] timed out after ${timeoutMs / 1000}s` : r.error ? `\n[necro] ${r.error.message}` : ""), ms: Date.now() - t0 };
 }
